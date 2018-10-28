@@ -399,6 +399,8 @@ class BaseAny2VecModel(utils.SaveLoad):
                 * Total word count used in training.
 
         """
+
+        print("_train_epoch_corpusfile")
         if not total_words:
             raise ValueError("total_words must be provided alongside corpus_file argument.")
 
@@ -432,6 +434,8 @@ class BaseAny2VecModel(utils.SaveLoad):
             progress_queue=progress_queue, job_queue=None, cur_epoch=cur_epoch,
             total_examples=total_examples, total_words=total_words, is_corpus_file_mode=True)
 
+        print(trained_word_count, raw_word_count, job_tally)
+        
         return trained_word_count, raw_word_count, job_tally
 
     def _train_epoch(self, data_iterable, cur_epoch=0, total_examples=None, total_words=None,
