@@ -726,6 +726,7 @@ class Doc2Vec(BaseWordEmbeddingsModel):
                     self, doc.words, doctag_indexes, alpha, work, neu1,
                     doctag_vectors=doctag_vectors, doctag_locks=doctag_locks
                 )
+        print(tally)
         return tally, self._raw_word_count(job)
 
     def train(self, documents=None, corpus_file=None, total_examples=None, total_words=None,
