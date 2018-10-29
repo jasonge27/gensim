@@ -355,7 +355,7 @@ class BaseAny2VecModel(utils.SaveLoad):
             example_count += examples
             trained_word_count += trained_words  # only words in vocab & sampled
             raw_word_count += raw_words
-            loss_cnt += 1
+            loss_count += 1
             total_loss += running_loss
 
             # log progress once every report_delay seconds
