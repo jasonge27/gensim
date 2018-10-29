@@ -701,7 +701,7 @@ class Doc2Vec(BaseWordEmbeddingsModel):
                 total_examples, total_words, work, neu1, self.docvecs.count,
                 doctag_vectors=doctag_vectors, doctag_locks=doctag_locks)
 
-        return examples, tally, raw_tally, running_los 
+        return examples, tally, raw_tally, running_loss 
 
     def _do_train_job(self, job, alpha, inits):
         """Train model using `job` data.
