@@ -291,6 +291,8 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
     cdef int sent_idx, idx_start, idx_end
     cdef REAL_t count, inv_count = 1.0
 
+    cdef REAL_t running_loss = 0.0
+
     cdef vector[string] doc_words
     cdef int _doc_tag = start_doctag
 
@@ -298,9 +300,6 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
         &c, model, _alpha, learn_doctags, learn_words, learn_hidden, train_words=False,
         work=work, neu1=neu1, word_vectors=word_vectors, word_locks=word_locks,
         doctag_vectors=doctag_vectors, doctag_locks=doctag_locks, docvecs_count=docvecs_count)
-
-    c.compute_loss = 1
-    c.running_training_loss = 0.0
 
     # release GIL & train on the full corpus, document by document
     with nogil:
@@ -353,7 +352,7 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
                     c.next_random = fast_document_dm_neg(
                         c.negative, c.cum_table, c.cum_table_len, c.next_random, c.neu1,
                         c.syn1neg, c.indexes[i], c.alpha, c.work, c.layer1_size, c.learn_hidden, 
-                        c.compute_loss, &c.running_training_loss)
+                        &running_loss)
 
                 if not c.cbow_mean:
                     sscal(&c.layer1_size, &inv_count, c.work, &ONE)  # (does this need BLAS-variants like saxpy?)
@@ -376,7 +375,7 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
             c.alpha = get_next_alpha(start_alpha, end_alpha, total_documents, total_words, expected_examples,
                                     expected_words, cur_epoch, num_epochs)
 
-    return total_documents, total_effective_words, total_words, c.running_training_loss
+    return total_documents, total_effective_words, total_words, running_loss
 
 
 def d2v_train_epoch_dm_concat(model, corpus_file, offset, start_doctag, _cython_vocab, _cur_epoch, _expected_examples,
