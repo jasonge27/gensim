@@ -294,6 +294,7 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
     cdef REAL_t count, inv_count = 1.0
 
     cdef REAL_t running_loss = 0.0
+    cdef int loss_count = 0
 
     cdef vector[string] doc_words
     cdef int _doc_tag = start_doctag
@@ -356,6 +357,8 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
                         c.syn1neg, c.indexes[i], c.alpha, c.work, c.layer1_size, c.learn_hidden, 
                         &running_loss)
 
+                loss_count += 1
+
                 if not c.cbow_mean:
                     sscal(&c.layer1_size, &inv_count, c.work, &ONE)  # (does this need BLAS-variants like saxpy?)
                 # apply accumulated error in work
@@ -376,6 +379,8 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
 
             c.alpha = get_next_alpha(start_alpha, end_alpha, total_documents, total_words, expected_examples,
                                     expected_words, cur_epoch, num_epochs)
+
+    running_loss = running_loss / loss_count
 
     return total_documents, total_effective_words, total_words, running_loss
 
