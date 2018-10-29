@@ -302,6 +302,10 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
     c.compute_loss = 1
     c.running_training_loss = model.running_training_loss
 
+    print("d2v_train_epoch_dm")
+    print(c.hs)
+    print(c.negative)
+
     # release GIL & train on the full corpus, document by document
     with nogil:
         input_stream.reset()
