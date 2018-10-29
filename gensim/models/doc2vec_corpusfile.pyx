@@ -375,7 +375,7 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
             c.alpha = get_next_alpha(start_alpha, end_alpha, total_documents, total_words, expected_examples,
                                     expected_words, cur_epoch, num_epochs)
 
-    return total_documents, total_effective_words, running_loss
+    return total_documents, total_effective_words, total_words, running_loss
 
 
 def d2v_train_epoch_dm_concat(model, corpus_file, offset, start_doctag, _cython_vocab, _cur_epoch, _expected_examples,
@@ -448,9 +448,6 @@ def d2v_train_epoch_dm_concat(model, corpus_file, offset, start_doctag, _cython_
         &c, model, _alpha, learn_doctags, learn_words, learn_hidden, train_words=False,
         work=work, neu1=neu1, word_vectors=word_vectors, word_locks=word_locks,
         doctag_vectors=doctag_vectors, doctag_locks=doctag_locks, docvecs_count=docvecs_count)
-
-    c.compute_loss = (1 if compute_loss else 0)
-    c.running_training_loss = model.running_training_loss
 
     # release GIL & train on the full corpus, document by document
     with nogil:
