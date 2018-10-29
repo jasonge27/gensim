@@ -170,11 +170,11 @@ class BaseAny2VecModel(utils.SaveLoad):
         """
         thread_private_mem = self._get_thread_working_mem()
 
-        examples, tally, raw_tally = self._do_train_epoch(
+        examples, tally, raw_tally, running_loss = self._do_train_epoch(
             corpus_file, thread_id, offset, cython_vocab, thread_private_mem, cur_epoch,
             total_examples=total_examples, total_words=total_words, **kwargs)
 
-        progress_queue.put((examples, tally, raw_tally))
+        progress_queue.put((examples, tally, raw_tally, running_loss))
         progress_queue.put(None)
 
     def _worker_loop(self, job_queue, progress_queue):
@@ -337,7 +337,7 @@ class BaseAny2VecModel(utils.SaveLoad):
                 * Total word count used in training.
 
         """
-        example_count, trained_word_count, raw_word_count = 0, 0, 0
+        example_count, trained_word_count, raw_word_count, loss_count, total_loss = 0, 0, 0, 0, 0
         start, next_report = default_timer() - 0.00001, 1.0
         job_tally = 0
         unfinished_worker_count = self.workers
@@ -348,13 +348,15 @@ class BaseAny2VecModel(utils.SaveLoad):
                 unfinished_worker_count -= 1
                 logger.info("worker thread finished; awaiting finish of %i more threads", unfinished_worker_count)
                 continue
-            examples, trained_words, raw_words = report
+            examples, trained_words, raw_words, running_loss = report
             job_tally += 1
 
             # update progress stats
             example_count += examples
             trained_word_count += trained_words  # only words in vocab & sampled
             raw_word_count += raw_words
+            loss_cnt += 1
+            total_loss += running_loss
 
             # log progress once every report_delay seconds
             elapsed = default_timer() - start
@@ -369,7 +371,7 @@ class BaseAny2VecModel(utils.SaveLoad):
             cur_epoch, example_count, total_examples, raw_word_count, total_words,
             trained_word_count, elapsed, is_corpus_file_mode)
         self.total_train_time += elapsed
-        return trained_word_count, raw_word_count, job_tally
+        return trained_word_count, raw_word_count, job_tally, total_loss / loss_cnt
 
     def _train_epoch_corpusfile(self, corpus_file, cur_epoch=0, total_examples=None, total_words=None, **kwargs):
         """Train the model for a single epoch.
@@ -430,13 +432,13 @@ class BaseAny2VecModel(utils.SaveLoad):
             thread.daemon = True
             thread.start()
 
-        trained_word_count, raw_word_count, job_tally = self._log_epoch_progress(
+        trained_word_count, raw_word_count, job_tally, running_loss = self._log_epoch_progress(
             progress_queue=progress_queue, job_queue=None, cur_epoch=cur_epoch,
             total_examples=total_examples, total_words=total_words, is_corpus_file_mode=True)
 
-        print(trained_word_count, raw_word_count, job_tally)
+        print(trained_word_count, raw_word_count, job_tally, running_loss)
         
-        return trained_word_count, raw_word_count, job_tally
+        return trained_word_count, raw_word_count, job_tally 
 
     def _train_epoch(self, data_iterable, cur_epoch=0, total_examples=None, total_words=None,
                      queue_factor=2, report_delay=1.0):
