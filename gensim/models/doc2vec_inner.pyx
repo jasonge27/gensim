@@ -464,12 +464,11 @@ def train_document_dm(model, doc_words, doctag_indexes, alpha, work=None, neu1=N
     cdef int i, j, k, m
     cdef long result = 0
 
+    cdef REAL_t running_loss = 0.0
+
     init_d2v_config(&c, model, alpha, learn_doctags, learn_words, learn_hidden, train_words=False,
                     work=work, neu1=neu1, word_vectors=word_vectors, word_locks=word_locks,
                     doctag_vectors=doctag_vectors, doctag_locks=doctag_locks)
-
-    c.compute_loss = 1
-    c.running_training_loss = model.running_training_loss
 
     c.doctag_len = <int>min(MAX_DOCUMENT_LEN, len(doctag_indexes))
 
@@ -533,7 +532,7 @@ def train_document_dm(model, doc_words, doctag_indexes, alpha, work=None, neu1=N
             if c.negative:
                 c.next_random = fast_document_dm_neg(c.negative, c.cum_table, c.cum_table_len, c.next_random,
                                                      c.neu1, c.syn1neg, c.indexes[i], c.alpha, c.work, c.layer1_size,
-                                                     c.learn_hidden,  &c.running_training_loss)
+                                                     c.learn_hidden,  &running_loss)
 
             if not c.cbow_mean:
                 sscal(&c.layer1_size, &inv_count, c.work, &ONE)  # (does this need BLAS-variants like saxpy?)
@@ -549,8 +548,6 @@ def train_document_dm(model, doc_words, doctag_indexes, alpha, work=None, neu1=N
                     else:
                          our_saxpy(&c.layer1_size, &c.word_locks[c.indexes[m]], c.work, &ONE,
                                    &c.word_vectors[c.indexes[m] * c.layer1_size], &ONE)
-
-    model.running_training_loss = c.running_training_loss
 
     return result
 
