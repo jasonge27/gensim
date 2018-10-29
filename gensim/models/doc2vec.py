@@ -631,7 +631,21 @@ class Doc2Vec(BaseWordEmbeddingsModel):
         return self.sg  # same as SG
 
     def _set_train_params(self, **kwargs):
-        pass
+        if 'compute_loss' in kwargs:
+            self.compute_loss = kwargs['compute_loss']
+        self.running_training_loss = 0
+    
+    def get_latest_training_loss(self):
+            """Get current value of the training loss.
+
+        Returns
+        -------
+        float
+            Current training loss.
+
+        """
+        return self.running_training_loss
+
 
     def _clear_post_train(self):
         """Alias for :meth:`~gensim.models.doc2vec.Doc2Vec.clear_sims`."""

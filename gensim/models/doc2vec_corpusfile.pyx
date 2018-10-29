@@ -299,6 +299,9 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
         work=work, neu1=neu1, word_vectors=word_vectors, word_locks=word_locks,
         doctag_vectors=doctag_vectors, doctag_locks=doctag_locks, docvecs_count=docvecs_count)
 
+    c.compute_loss = 1
+    c.running_training_loss = model.running_training_loss
+
     # release GIL & train on the full corpus, document by document
     with nogil:
         input_stream.reset()
@@ -349,7 +352,8 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
                 if c.negative:
                     c.next_random = fast_document_dm_neg(
                         c.negative, c.cum_table, c.cum_table_len, c.next_random, c.neu1,
-                        c.syn1neg, c.indexes[i], c.alpha, c.work, c.layer1_size, c.learn_hidden)
+                        c.syn1neg, c.indexes[i], c.alpha, c.work, c.layer1_size, c.learn_hidden, 
+                        c.compute_loss, &c.running_training_loss)
 
                 if not c.cbow_mean:
                     sscal(&c.layer1_size, &inv_count, c.work, &ONE)  # (does this need BLAS-variants like saxpy?)
@@ -371,6 +375,8 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
 
             c.alpha = get_next_alpha(start_alpha, end_alpha, total_documents, total_words, expected_examples,
                                     expected_words, cur_epoch, num_epochs)
+
+    model.running_training_loss = c.running_training_loss
 
     return total_documents, total_effective_words, total_words
 
@@ -446,6 +452,9 @@ def d2v_train_epoch_dm_concat(model, corpus_file, offset, start_doctag, _cython_
         work=work, neu1=neu1, word_vectors=word_vectors, word_locks=word_locks,
         doctag_vectors=doctag_vectors, doctag_locks=doctag_locks, docvecs_count=docvecs_count)
 
+    c.compute_loss = (1 if compute_loss else 0)
+    c.running_training_loss = model.running_training_loss
+
     # release GIL & train on the full corpus, document by document
     with nogil:
         input_stream.reset()
@@ -464,6 +473,7 @@ def d2v_train_epoch_dm_concat(model, corpus_file, offset, start_doctag, _cython_
                 doc_words, c.sample, c.hs, c.window, &total_words, &effective_words,
                 &c.next_random, vocab.get_vocab_ptr(), c.indexes, c.codelens, c.codes,
                 c.points, NULL, &document_len, c.train_words, c.docvecs_count, _doc_tag)
+
 
             for i in range(document_len):
                 j = i - c.window      # negative OK: will pad with null word

@@ -125,7 +125,7 @@ cdef void fast_document_dm_hs(
 cdef unsigned long long fast_document_dm_neg(
     const int negative, np.uint32_t *cum_table, unsigned long long cum_table_len, unsigned long long next_random,
     REAL_t *neu1, REAL_t *syn1neg, const int predict_word_index, const REAL_t alpha, REAL_t *work,
-    const int size, int learn_hidden) nogil:
+    const int size, int learn_hidden, const int _compute_loss, REAL_t * _running_training_loss_param) nogil:
 
     cdef long long row2
     cdef unsigned long long modulo = 281474976710655ULL
@@ -147,11 +147,19 @@ cdef unsigned long long fast_document_dm_neg(
             label = <REAL_t>0.0
 
         row2 = target_index * size
-        f = our_dot(&size, neu1, &ONE, &syn1neg[row2], &ONE)
-        if f <= -MAX_EXP or f >= MAX_EXP:
+        f_dot = our_dot(&size, neu1, &ONE, &syn1neg[row2], &ONE)
+        if f_dot <= -MAX_EXP or f_dot >= MAX_EXP:
             continue
-        f = EXP_TABLE[<int>((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]
+        f = EXP_TABLE[<int>((f_dot + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]
         g = (label - f) * alpha
+
+        if _compute_loss == 1:
+            f_dot = (f_dot if d == 0  else -f_dot)
+            if f_dot <= -MAX_EXP or f_dot >= MAX_EXP:
+                continue
+            log_e_f_dot = LOG_TABLE[<int>((f_dot + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]
+            _running_training_loss_param[0] = _running_training_loss_param[0] - log_e_f_dot 
+
         our_saxpy(&size, &g, &syn1neg[row2], &ONE, work, &ONE)
         if learn_hidden:
             our_saxpy(&size, &g, neu1, &ONE, &syn1neg[row2], &ONE)
@@ -459,6 +467,9 @@ def train_document_dm(model, doc_words, doctag_indexes, alpha, work=None, neu1=N
                     work=work, neu1=neu1, word_vectors=word_vectors, word_locks=word_locks,
                     doctag_vectors=doctag_vectors, doctag_locks=doctag_locks)
 
+    c.compute_loss = 1
+    c.running_training_loss = model.running_training_loss
+
     c.doctag_len = <int>min(MAX_DOCUMENT_LEN, len(doctag_indexes))
 
     vlookup = model.wv.vocab
@@ -521,7 +532,7 @@ def train_document_dm(model, doc_words, doctag_indexes, alpha, work=None, neu1=N
             if c.negative:
                 c.next_random = fast_document_dm_neg(c.negative, c.cum_table, c.cum_table_len, c.next_random,
                                                      c.neu1, c.syn1neg, c.indexes[i], c.alpha, c.work, c.layer1_size,
-                                                     c.learn_hidden)
+                                                     c.learn_hidden, c.compute_loss, &c.running_training_loss)
 
             if not c.cbow_mean:
                 sscal(&c.layer1_size, &inv_count, c.work, &ONE)  # (does this need BLAS-variants like saxpy?)
@@ -537,6 +548,8 @@ def train_document_dm(model, doc_words, doctag_indexes, alpha, work=None, neu1=N
                     else:
                          our_saxpy(&c.layer1_size, &c.word_locks[c.indexes[m]], c.work, &ONE,
                                    &c.word_vectors[c.indexes[m] * c.layer1_size], &ONE)
+
+    model.running_training_loss = c.running_training_loss
 
     return result
 
