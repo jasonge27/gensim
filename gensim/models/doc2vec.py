@@ -685,7 +685,7 @@ class Doc2Vec(BaseWordEmbeddingsModel):
         offset = offsets[thread_id]
         start_doctag = start_doctags[thread_id]
 
-        running_loss = None 
+        running_loss = 0.0 
         examples = 1
         tally = 1
         raw_tally = 1
