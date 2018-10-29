@@ -686,6 +686,9 @@ class Doc2Vec(BaseWordEmbeddingsModel):
         start_doctag = start_doctags[thread_id]
 
         running_loss = None 
+        examples = 1
+        tally = 1
+        raw_tally = 1
 
         if self.sg:
             examples, tally, raw_tally = d2v_train_epoch_dbow(
@@ -699,10 +702,12 @@ class Doc2Vec(BaseWordEmbeddingsModel):
                 doctag_vectors=doctag_vectors, doctag_locks=doctag_locks)
         else:
             print("calling dv2_train_epoch_dm")
-            examples, tally, raw_tally, running_loss = d2v_train_epoch_dm(
+            r = d2v_train_epoch_dm(
+            #examples, tally, raw_tally, running_loss = d2v_train_epoch_dm(
                 self, corpus_file, offset, start_doctag, cython_vocab, cur_epoch,
                 total_examples, total_words, work, neu1, self.docvecs.count,
                 doctag_vectors=doctag_vectors, doctag_locks=doctag_locks)
+            print(r)
 
         return examples, tally, raw_tally, running_loss 
 
