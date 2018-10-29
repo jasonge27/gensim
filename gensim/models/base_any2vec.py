@@ -430,7 +430,7 @@ class BaseAny2VecModel(utils.SaveLoad):
             thread.daemon = True
             thread.start()
 
-        trained_word_count, raw_word_count, job_tally, running_loss = self._log_epoch_progress(
+        trained_word_count, raw_word_count, job_tally = self._log_epoch_progress(
             progress_queue=progress_queue, job_queue=None, cur_epoch=cur_epoch,
             total_examples=total_examples, total_words=total_words, is_corpus_file_mode=True)
 
