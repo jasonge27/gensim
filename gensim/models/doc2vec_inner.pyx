@@ -133,7 +133,6 @@ cdef unsigned long long fast_document_dm_neg(
     cdef np.uint32_t target_index
     cdef int d
 
-    print("fast_document_dm_neg")
     # l1 already composed by caller, passed in as neu1
     # work (also passsed in) will accumulate l1 error for outside application
     for d in range(negative+1):
