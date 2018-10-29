@@ -337,7 +337,7 @@ class BaseAny2VecModel(utils.SaveLoad):
                 * Total word count used in training.
 
         """
-        example_count, trained_word_count, raw_word_count, loss_count, total_loss = 0, 0, 0, 0, 0
+        example_count, trained_word_count, raw_word_count = 0, 0, 0
         start, next_report = default_timer() - 0.00001, 1.0
         job_tally = 0
         unfinished_worker_count = self.workers
@@ -355,8 +355,8 @@ class BaseAny2VecModel(utils.SaveLoad):
             example_count += examples
             trained_word_count += trained_words  # only words in vocab & sampled
             raw_word_count += raw_words
-            loss_count += 1
-            total_loss += running_loss
+
+            logger.info("running loss: %f"%running_loss)
 
             # log progress once every report_delay seconds
             elapsed = default_timer() - start
@@ -371,7 +371,7 @@ class BaseAny2VecModel(utils.SaveLoad):
             cur_epoch, example_count, total_examples, raw_word_count, total_words,
             trained_word_count, elapsed, is_corpus_file_mode)
         self.total_train_time += elapsed
-        return trained_word_count, raw_word_count, job_tally, total_loss / loss_count
+        return trained_word_count, raw_word_count, job_tally
 
     def _train_epoch_corpusfile(self, corpus_file, cur_epoch=0, total_examples=None, total_words=None, **kwargs):
         """Train the model for a single epoch.
@@ -401,8 +401,6 @@ class BaseAny2VecModel(utils.SaveLoad):
                 * Total word count used in training.
 
         """
-
-        print("_train_epoch_corpusfile")
         if not total_words:
             raise ValueError("total_words must be provided alongside corpus_file argument.")
 
@@ -436,8 +434,6 @@ class BaseAny2VecModel(utils.SaveLoad):
             progress_queue=progress_queue, job_queue=None, cur_epoch=cur_epoch,
             total_examples=total_examples, total_words=total_words, is_corpus_file_mode=True)
 
-        print(trained_word_count, raw_word_count, job_tally, running_loss)
-        
         return trained_word_count, raw_word_count, job_tally 
 
     def _train_epoch(self, data_iterable, cur_epoch=0, total_examples=None, total_words=None,
