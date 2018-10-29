@@ -24,7 +24,7 @@ except ImportError:
     # in scipy > 0.15, fblas function has been removed
     import scipy.linalg.blas as fblas
 
-from word2vec_inner cimport bisect_left, random_int32, sscal, REAL_t, EXP_TABLE, our_dot, our_saxpy
+from word2vec_inner cimport bisect_left, random_int32, sscal, REAL_t, EXP_TABLE, LOG_TABLE, our_dot, our_saxpy
 
 DEF MAX_DOCUMENT_LEN = 10000
 
@@ -129,7 +129,7 @@ cdef unsigned long long fast_document_dm_neg(
 
     cdef long long row2
     cdef unsigned long long modulo = 281474976710655ULL
-    cdef REAL_t f, g, label
+    cdef REAL_t f, g, f_dot, log_e_f_dot, label
     cdef np.uint32_t target_index
     cdef int d
 
