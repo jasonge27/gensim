@@ -382,7 +382,7 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
 
     model.running_training_loss = c.running_training_loss
 
-    return total_documents, total_effective_words, total_words
+    return total_documents, total_effective_words, total_words, c.running_training_loss
 
 
 def d2v_train_epoch_dm_concat(model, corpus_file, offset, start_doctag, _cython_vocab, _cur_epoch, _expected_examples,
