@@ -153,7 +153,8 @@ cdef unsigned long long fast_document_dm_neg(
         f = EXP_TABLE[<int>((f_dot + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]
         g = (label - f) * alpha
 
-        if _compute_loss == 1:
+        #if _compute_loss == 1:
+        if True:
             f_dot = (f_dot if d == 0  else -f_dot)
             if f_dot <= -MAX_EXP or f_dot >= MAX_EXP:
                 continue
