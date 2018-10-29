@@ -701,7 +701,7 @@ class Doc2Vec(BaseWordEmbeddingsModel):
                 total_examples, total_words, work, neu1, self.docvecs.count,
                 doctag_vectors=doctag_vectors, doctag_locks=doctag_locks)
         else:
-            print("calling dv2_train_epoch_dm")
+            print("calling dv2_train_epoch_dm with version:%d"% CORPUSFILE_VERSION)
             r = d2v_train_epoch_dm(
             #examples, tally, raw_tally, running_loss = d2v_train_epoch_dm(
                 self, corpus_file, offset, start_doctag, cython_vocab, cur_epoch,

@@ -524,4 +524,4 @@ def d2v_train_epoch_dm_concat(model, corpus_file, offset, start_doctag, _cython_
     return total_documents, total_effective_words, total_words
 
 
-CORPUSFILE_VERSION = 1
+CORPUSFILE_VERSION = 7 
