@@ -371,7 +371,7 @@ class BaseAny2VecModel(utils.SaveLoad):
             cur_epoch, example_count, total_examples, raw_word_count, total_words,
             trained_word_count, elapsed, is_corpus_file_mode)
         self.total_train_time += elapsed
-        return trained_word_count, raw_word_count, job_tally, total_loss / loss_cnt
+        return trained_word_count, raw_word_count, job_tally, total_loss / loss_count
 
     def _train_epoch_corpusfile(self, corpus_file, cur_epoch=0, total_examples=None, total_words=None, **kwargs):
         """Train the model for a single epoch.
