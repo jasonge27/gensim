@@ -533,7 +533,7 @@ def train_document_dm(model, doc_words, doctag_indexes, alpha, work=None, neu1=N
             if c.negative:
                 c.next_random = fast_document_dm_neg(c.negative, c.cum_table, c.cum_table_len, c.next_random,
                                                      c.neu1, c.syn1neg, c.indexes[i], c.alpha, c.work, c.layer1_size,
-                                                     c.learn_hidden, c.compute_loss, &c.running_training_loss)
+                                                     c.learn_hidden,  &c.running_training_loss)
 
             if not c.cbow_mean:
                 sscal(&c.layer1_size, &inv_count, c.work, &ONE)  # (does this need BLAS-variants like saxpy?)
