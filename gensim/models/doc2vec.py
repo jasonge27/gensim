@@ -636,7 +636,7 @@ class Doc2Vec(BaseWordEmbeddingsModel):
         self.running_training_loss = 0
     
     def get_latest_training_loss(self):
-            """Get current value of the training loss.
+        """Get current value of the training loss.
 
         Returns
         -------
@@ -645,7 +645,6 @@ class Doc2Vec(BaseWordEmbeddingsModel):
 
         """
         return self.running_training_loss
-
 
     def _clear_post_train(self):
         """Alias for :meth:`~gensim.models.doc2vec.Doc2Vec.clear_sims`."""
