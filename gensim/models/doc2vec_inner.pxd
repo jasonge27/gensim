@@ -33,6 +33,9 @@ cdef struct Doc2VecConfig:
     REAL_t alpha
     int layer1_size, vector_size
 
+    REAL_t running_training_loss
+    int compute_loss
+
     int codelens[MAX_DOCUMENT_LEN]
     np.uint32_t indexes[MAX_DOCUMENT_LEN]
     np.uint32_t doctag_indexes[MAX_DOCUMENT_LEN]
@@ -73,7 +76,7 @@ cdef void fast_document_dm_hs(
 cdef unsigned long long fast_document_dm_neg(
     const int negative, np.uint32_t *cum_table, unsigned long long cum_table_len, unsigned long long next_random,
     REAL_t *neu1, REAL_t *syn1neg, const int predict_word_index, const REAL_t alpha, REAL_t *work,
-    const int size, int learn_hidden) nogil
+    const int size, int learn_hidden, const int _compute_loss, REAL_t *_running_training_loss_param) nogil
 
 
 cdef void fast_document_dmc_hs(
