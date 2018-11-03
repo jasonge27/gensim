@@ -276,10 +276,10 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
     """
     cdef Doc2VecConfig c
 
-    cdef long cur_epoch = _cur_epoch
-    cdef long num_epochs = model.epochs
-    cdef long expected_examples = (-1 if _expected_examples is None else _expected_examples)
-    cdef long expected_words = (-1 if _expected_words is None else _expected_words)
+    cdef int cur_epoch = _cur_epoch
+    cdef int num_epochs = model.epochs
+    cdef int expected_examples = (-1 if _expected_examples is None else _expected_examples)
+    cdef int expected_words = (-1 if _expected_words is None else _expected_words)
     cdef REAL_t start_alpha = model.alpha
     cdef REAL_t end_alpha = model.min_alpha
     cdef REAL_t _alpha = get_alpha(model.alpha, end_alpha, cur_epoch, num_epochs)
@@ -287,17 +287,17 @@ def d2v_train_epoch_dm(model, corpus_file, offset, start_doctag, _cython_vocab, 
     cdef CythonLineSentence input_stream = CythonLineSentence(corpus_file, offset)
     cdef CythonVocab vocab = _cython_vocab
 
-    cdef long i, j, k, m, document_len
-    cdef long effective_words = 0
-    cdef long total_effective_words = 0, total_documents = 0, total_words = 0
-    cdef long sent_idx, idx_start, idx_end
+    cdef int i, j, k, m, document_len
+    cdef int effective_words = 0
+    cdef int total_effective_words = 0, total_documents = 0, total_words = 0
+    cdef int sent_idx, idx_start, idx_end
     cdef REAL_t count, inv_count = 1.0
 
     cdef REAL_t running_loss = 0.0
-    cdef long loss_count = 0
+    cdef int loss_count = 0
 
     cdef vector[string] doc_words
-    cdef long _doc_tag = start_doctag
+    cdef int _doc_tag = start_doctag
 
     init_d2v_config(
         &c, model, _alpha, learn_doctags, learn_words, learn_hidden, train_words=False,
